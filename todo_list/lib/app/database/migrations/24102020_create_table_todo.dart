@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
-void createV1(Batch batch) {
+void createTableTodo(Batch batch) {
   batch.execute('''
     create table todo (
       id Integer primary key autoincrement,

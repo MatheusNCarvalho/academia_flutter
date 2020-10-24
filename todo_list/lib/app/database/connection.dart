@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:todo_list/app/database/migrations/migration_v1.dart';
+import 'package:todo_list/app/database/migrations/24102020_create_table_todo.dart';
 
 import 'migrations/migration_v2.dart';
 
@@ -55,7 +55,7 @@ class Connection {
 
   FutureOr<void> _onCreate(Database db, int version) {
     var batch = db.batch();
-    createV1(batch);
+    createTableTodo(batch);
     createV2(batch);
     batch.commit();
   }
