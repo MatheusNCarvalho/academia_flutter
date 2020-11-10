@@ -41,6 +41,7 @@ class _AppState extends State<App> {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: Color(0xFFFF9129),
           buttonColor: Color(0xFFFF9129),
@@ -55,8 +56,8 @@ class _AppState extends State<App> {
                 ),
                 child: HomePage(),
               ),
-          '/new': (_) => ChangeNotifierProvider(
-                create: (_) => NewTaskController(
+          NewTaskPage.routerName: (_) => ChangeNotifierProvider(
+                create: (context) => NewTaskController(
                   repository: context.read<ITodoRepository>(),
                 ),
                 child: NewTaskPage(),
