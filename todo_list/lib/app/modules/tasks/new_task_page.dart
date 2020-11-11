@@ -69,6 +69,7 @@ class NewTaskPage extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                   SizedBox(height: 20),
                   TimeComponent(),
                   SizedBox(height: 50),
                   Center(

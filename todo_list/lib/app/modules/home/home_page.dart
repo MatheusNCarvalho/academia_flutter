@@ -1,5 +1,6 @@
 import 'package:ff_navigation_bar/ff_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_list/app/modules/home/home_controller.dart';
 
@@ -36,7 +37,21 @@ class _HomePageState extends State<HomePage> {
               selectedItemLabelColor: Colors.black,
             ),
             selectedIndex: controller.currentIndex,
-            onSelectTab: controller.changeSelectedTab,
+            onSelectTab: (int index) {
+              if (index == 2) {
+                showDatePicker(
+                  context: context,
+                  initialDate: controller.daySelected,
+                  firstDate: DateTime.now().subtract(Duration(days: (360 * 3))),
+                  lastDate: DateTime.now().add(Duration(days: (360 * 10))),
+                ).then((value) {
+                  controller.daySelected = value;
+                  controller.findTodoBySelectedDay();
+                });
+                return;
+              }
+              controller.changeSelectedTab(index);
+            },
             items: [
               FFNavigationBarItem(
                 iconData: Icons.check_circle,
@@ -56,8 +71,27 @@ class _HomePageState extends State<HomePage> {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             child: ListView.builder(
-              itemCount: 3,
+              itemCount: controller.listTodos?.keys?.length ?? 0,
               itemBuilder: (_, index) {
+                var dateFormat = DateFormat('dd/MM/yyyy');
+                var dayKey = controller.listTodos.keys.elementAt(index);
+                var day = dayKey;
+                var items = controller.listTodos[dayKey];
+
+                if (items.isEmpty && controller.currentIndex == 0) {
+                  return SizedBox.shrink();
+                }
+
+                var currentDate = DateTime.now();
+                if (dayKey == dateFormat.format(currentDate)) {
+                  day = 'Hoje';
+                }
+
+                if (dayKey ==
+                    dateFormat.format(currentDate.add(Duration(days: 1)))) {
+                  day = 'Amanha';
+                }
+
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -68,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Expanded(
                             child: Text(
-                              "Hoje",
+                              day,
                               style: TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
@@ -82,7 +116,8 @@ class _HomePageState extends State<HomePage> {
                               color: Theme.of(context).primaryColor,
                             ),
                             onPressed: () {
-                              Navigator.of(context).pushNamed(NewTaskPage.routerName);
+                              Navigator.of(context)
+                                  .pushNamed(NewTaskPage.routerName);
                             },
                           ),
                         ],
@@ -91,26 +126,37 @@ class _HomePageState extends State<HomePage> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: 4,
+                      itemCount: items.length,
                       itemBuilder: (_, index) {
+                        var todo = items[index];
+
                         return ListTile(
                           leading: Checkbox(
-                            value: false,
-                            onChanged: (value) {},
+                            activeColor: Theme.of(context).primaryColor,
+                            value: todo.finalizado,
+                            onChanged: (_) {
+                              controller.checkedOrUncheck(todo);
+                            },
                           ),
                           title: Text(
-                            "Tarefa X",
+                            todo.descricao,
                             style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                decoration: TextDecoration.lineThrough),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              decoration: todo.finalizado
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
                           ),
                           trailing: Text(
-                            '06:00',
+                            '${todo.dataHora.hour}: ${todo.dataHora.minute}',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                decoration: TextDecoration.lineThrough),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              decoration: todo.finalizado
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
                           ),
                         );
                       },

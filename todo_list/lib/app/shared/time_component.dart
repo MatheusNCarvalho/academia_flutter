@@ -10,22 +10,58 @@ class _TimeComponentState extends State<TimeComponent> {
       .map((h) => '${h.toString().padLeft(2, '0')}')
       .toList();
 
+  final List<String> _min = List.generate(61, (index) => index++)
+      .map((h) => '${h.toString().padLeft(2, '0')}')
+      .toList();
+
+  final List<String> _sec = List.generate(61, (index) => index++)
+      .map((h) => '${h.toString().padLeft(2, '0')}')
+      .toList();
+
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildBox(_hours),
+        _buildBox(_min),
+        _buildBox(_sec),
       ],
     );
   }
 
-  Widget _buildBox(List<String> hours) {
+  Widget _buildBox(List<String> options) {
     return Container(
       height: 120,
       width: 100,
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
-        borderRadius: BorderRadius.circular(20)
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            spreadRadius: 0,
+            blurRadius: 10,
+            color: Theme.of(context).primaryColor,
+            offset: Offset(2, 5),
+          )
+        ],
+      ),
+      child: ListWheelScrollView(
+        physics: FixedExtentScrollPhysics(),
+        itemExtent: 60,
+        perspective: 0.007,        
+        children: options.map(
+          (item) {
+            return Text(
+              item,
+              style: TextStyle(
+                fontSize: 40,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
+        ).toList(),
       ),
     );
   }

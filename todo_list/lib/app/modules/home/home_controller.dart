@@ -1,15 +1,92 @@
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
+import 'package:todo_list/app/models/todo_model.dart';
 import 'package:todo_list/app/repositories/interfaces/todo_repository_interface.dart';
+import 'package:collection/collection.dart';
 
 class HomeController extends ChangeNotifier {
   final ITodoRepository repository;
+  DateTime startDate;
+  DateTime endDate;
+  DateTime daySelected;
+  Map<String, List<TodoModel>> listTodos;
 
-  HomeController({@required this.repository});
+  HomeController({@required this.repository}) {
+    daySelected = DateTime.now();
+  }
 
   int currentIndex = 1;
 
-  void changeSelectedTab(index){
+  void changeSelectedTab(int index) {
     currentIndex = index;
+    switch (index) {
+      case 0:
+        getByFinalized();
+        break;
+      case 1:
+        findAllForWeek();
+        break;
+    }
+    notifyListeners();
+  }
+
+  Future<void> findAllForWeek() async {
+    var dateFormat = DateFormat('dd/MM/yyyy');
+
+    startDate = DateTime.now();
+
+    if (startDate.weekday != DateTime.sunday) {
+      startDate = startDate.subtract(Duration(days: startDate.weekday - 1));
+    }
+
+    endDate = startDate.add(Duration(days: 6));
+
+    var todos = await repository.findByPeriod(startDate, endDate);
+
+    if (todos.isEmpty) {
+      listTodos = {
+        dateFormat.format(DateTime.now()): [],
+      };
+      notifyListeners();
+      return;
+    }
+    listTodos = groupBy(
+      todos,
+      (TodoModel todo) => dateFormat.format(todo.dataHora),
+    );
+    notifyListeners();
+  }
+
+  void checkedOrUncheck(TodoModel model) {
+    model.finalizado = !model.finalizado;
+    notifyListeners();
+    repository.toggle(model);
+  }
+
+  void getByFinalized() {
+    listTodos = listTodos.map(
+      (key, value) {
+        var todosFinalized = value.where((item) => item.finalizado).toList();
+        return MapEntry(key, todosFinalized);
+      },
+    );
+    notifyListeners();
+  }
+
+  Future<void> findTodoBySelectedDay() async {
+    var dateFormat = DateFormat('dd/MM/yyyy');
+
+    var todos = await repository.findByPeriod(daySelected, daySelected);
+
+    if (todos.isEmpty) {
+      listTodos = {
+        dateFormat.format(DateTime.now()): [],
+      };
+      notifyListeners();
+      return;
+    }
+    listTodos =
+        groupBy(todos, (TodoModel todo) => dateFormat.format(todo.dataHora));
     notifyListeners();
   }
 }
