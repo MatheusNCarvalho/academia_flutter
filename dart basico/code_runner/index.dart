@@ -42,3 +42,4 @@ void exercicio6(List<String> values) {
     print("${value[0]} tem ${value[1]}");
   }
 }
+
