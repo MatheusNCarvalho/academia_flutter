@@ -45,6 +45,9 @@ class _HomePageState extends State<HomePage> {
                   firstDate: DateTime.now().subtract(Duration(days: (360 * 3))),
                   lastDate: DateTime.now().add(Duration(days: (360 * 10))),
                 ).then((value) {
+                  if (value == null) {
+                    return;
+                  }
                   controller.daySelected = value;
                   controller.findTodoBySelectedDay();
                 });
@@ -115,9 +118,12 @@ class _HomePageState extends State<HomePage> {
                               size: 30,
                               color: Theme.of(context).primaryColor,
                             ),
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed(NewTaskPage.routerName);
+                            onPressed: () async {
+                              await Navigator.of(context).pushNamed(
+                                NewTaskPage.routerName,
+                                arguments: dayKey,
+                              );
+                              controller.update();
                             },
                           ),
                         ],
@@ -149,7 +155,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           trailing: Text(
-                            '${todo.dataHora.hour}: ${todo.dataHora.minute}',
+                            '${todo.dataHora.hour.toString().padLeft(2, '0')} : ${todo.dataHora.minute.toString().padLeft(2, '0')}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
@@ -158,6 +164,31 @@ class _HomePageState extends State<HomePage> {
                                   : null,
                             ),
                           ),
+                          onLongPress: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text("Excluir tarefa"),
+                                  content: Text(
+                                      "Deseja realmenete excluir a tarefa ${todo.descricao.toUpperCase()}"),
+                                  actions: [
+                                    FlatButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text("Cancelar"),
+                                    ),
+                                    FlatButton(
+                                      onPressed: () {
+                                        controller.delete(todo);
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text("Sim"),
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         );
                       },
                     )

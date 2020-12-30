@@ -34,7 +34,7 @@ class Connection {
           _db = await openDatabase(
             fullPath,
             version: VERSION,
-            onConfigure: _onConfigure,
+            //onConfigure: _onConfigure,
             onCreate: _onCreate,
             onUpgrade: _onUpgrade,
           );
@@ -49,9 +49,9 @@ class Connection {
     _db = null;
   }
 
-  Future<FutureOr<void>> _onConfigure(Database db) async {
-    await _db.execute("PRAGMA foreing_keys = ON");
-  }
+  // Future<FutureOr<void>> _onConfigure(Database db) async {
+  //   await _db.execute("PRAGMA foreing_keys = ON");
+  // }
 
   FutureOr<void> _onCreate(Database db, int version) {
     var batch = db.batch();

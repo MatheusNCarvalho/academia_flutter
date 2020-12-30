@@ -38,9 +38,15 @@ class TodoRepository implements ITodoRepository {
   Future<void> toggle(TodoModel model) async {
     var conn = await Connection().instance;
 
-    conn.rawUpdate("UPDATE todo SET finalizando = ? WHERE id = ?", [
-      model.finalizadoToInt,
-      model.id
-    ]);
+    conn.rawUpdate(
+      "UPDATE todo SET finalizado = ? WHERE id = ?",
+      [model.finalizadoToInt, model.id],
+    );
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    var conn = await Connection().instance;
+    conn.delete("todo", where: "id = ?", whereArgs: [id]);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_list/app/models/todo_model.dart';
 import 'package:todo_list/app/repositories/interfaces/todo_repository_interface.dart';
@@ -8,11 +9,12 @@ class HomeController extends ChangeNotifier {
   final ITodoRepository repository;
   DateTime startDate;
   DateTime endDate;
-  DateTime daySelected;
+  DateTime daySelected = DateTime.now();
   Map<String, List<TodoModel>> listTodos;
+  String error;
 
   HomeController({@required this.repository}) {
-    daySelected = DateTime.now();
+    findAllForWeek();
   }
 
   int currentIndex = 1;
@@ -74,13 +76,17 @@ class HomeController extends ChangeNotifier {
   }
 
   Future<void> findTodoBySelectedDay() async {
+    if (daySelected == null) {
+      return;
+    }
+
     var dateFormat = DateFormat('dd/MM/yyyy');
 
     var todos = await repository.findByPeriod(daySelected, daySelected);
 
     if (todos.isEmpty) {
       listTodos = {
-        dateFormat.format(DateTime.now()): [],
+        dateFormat.format(daySelected): [],
       };
       notifyListeners();
       return;
@@ -88,5 +94,29 @@ class HomeController extends ChangeNotifier {
     listTodos =
         groupBy(todos, (TodoModel todo) => dateFormat.format(todo.dataHora));
     notifyListeners();
+  }
+
+  void update() {
+    if (currentIndex == 0) {
+      getByFinalized();
+    }
+    if (currentIndex == 1) {
+      this.findAllForWeek();
+    }
+
+    if (currentIndex == 2) {
+      this.findTodoBySelectedDay();
+    }
+  }
+
+  Future<void> delete(TodoModel model) async {
+    try {
+      await repository.delete(model.id);
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      findTodoBySelectedDay();
+      getByFinalized();
+    }
   }
 }
